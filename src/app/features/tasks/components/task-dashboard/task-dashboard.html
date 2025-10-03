@@ -1,0 +1,72 @@
+<div id="dash">
+  <b>Dashboard</b>
+  <br>
+  <br>
+  <div class="container">
+    <svg viewBox="0 0 120 120" width="150" height="150">
+      <circle class="bg" cx="60" cy="60" r="45"></circle>
+      <circle #progressCircle class="progress" id="progress-1"cx="60" cy="60" r="45"></circle>
+      <text x="35%" y="50%" text-anchor="large" font-size="30" fill="black">{{maxPending}}</text>
+      <text x="50%" y="60%" text-anchor="middle" dominant-baseline="middle" font-size="15" fill="blue">Pending</text>
+    </svg>
+    <svg viewBox="0 0 120 120" width="150" height="150">
+      <circle class="bg" cx="60" cy="60" r="45"></circle>
+      <circle #progressCircle class="progress" id="progress-2"cx="60" cy="60" r="45"></circle>
+      <text x="35%" y="50%" text-anchor="large" font-size="30" fill="black">{{maxInp}}</text>
+      <text x="50%" y="60%" text-anchor="middle" dominant-baseline="middle" font-size="14" fill="rgb(245,157,80)">In-progress</text>
+    </svg>
+
+    <svg viewBox="0 0 120 120" width="150" height="150">
+      <circle class="bg" cx="60" cy="60" r="45"></circle>
+      <circle #progressCircle class="progress" id="progress-3" cx="60" cy="60" r="45"></circle>
+      <text x="35%" y="50%" text-anchor="large" font-size="30" fill="black">{{maxCompleted}}</text>
+      <text x="50%" y="60%" text-anchor="middle" dominant-baseline="middle" font-size="15" fill="rgb(94,196,156)">Completed</text>
+    </svg>
+  </div>
+  <br>
+  <div class="container">
+    <div class="container-op">
+      <div id="search">
+        <input type="text" placeholder="Search by title...">
+        <i class="fas fa-search"></i>
+      </div>
+    </div>
+    <div class="container-op">
+      <h4>Status</h4>
+      <div class="container">
+        
+      <div class="opcion">
+        <input type="radio" id="pending" name="status" value="pending">
+        <label for="pending">pending</label>
+      </div>
+      <div class="opcion">
+        <input type="radio" id="in-progress" name="status" value="in-progress">
+        <label for="in-progress">In-progress</label>
+      </div>
+    </div>
+      </div>
+    <div class="container-op">
+      <h4>Priority</h4>
+      <div class="container">
+      <div class="opcion">
+        <input type="radio" id="low" name="priority" value="low">
+        <label for="low">low</label>
+      </div>
+      <div class="opcion">
+        <input type="radio" id="medium" name="priority" value="medium">
+        <label for="medium">medium</label>
+      </div>
+      <div class="opcion">
+        <input type="radio" id="high" name="priority" value="high">
+        <label for="high">high</label>
+      </div>
+      </div>
+  </div><br>
+  </div>
+  <app-task-list></app-task-list>
+  
+  <div style="text-align: end;;">  <button (click)="transformDisplay()" >Add New Task</button></div>
+</div>
+
+
+
