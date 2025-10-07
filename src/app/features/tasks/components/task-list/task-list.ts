@@ -1,9 +1,10 @@
 import { Component, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TasksService } from '../../../../core/services/task';
+import { TasksService, SharedDataService} from '../../../../core/services/task';
 import { ChangeDetectorRef } from '@angular/core';
 import { Task, TaskPriority, TaskStatus } from '../../../../core/models/task.model';
-
+import { Injectable } from '@angular/core';
+import Swal from 'sweetalert2';
 @Component({
   selector: 'app-task-list',
   standalone: true,        
@@ -11,17 +12,32 @@ import { Task, TaskPriority, TaskStatus } from '../../../../core/models/task.mod
   templateUrl: './task-list.html',
   styleUrls: ['./task-list.css'],
   encapsulation: ViewEncapsulation.None
+
 })
 export class TaskList  {
   tasks: Task[] = [];
 
-  constructor(private tasksService: TasksService, private cdr: ChangeDetectorRef) {}
+  constructor(private tasksService: TasksService, private cdr: ChangeDetectorRef, private sharedDataService: SharedDataService) {}
 
   async deleteTask(id: number): Promise<void> {
     try {
-      await this.tasksService.deleteTaskById(id); 
-      this.tasks = this.tasks.filter(task => task.id !== id);
-      this.cdr.detectChanges();
+
+      Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, delete it!'
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          await this.tasksService.deleteTaskById(id);
+          this.tasks = this.tasks.filter(task => task.id !== id);
+          this.cdr.detectChanges();
+        }
+      });
+      
     } catch (error) {
       console.error('Error deleting task:', error);
     }
@@ -62,9 +78,14 @@ export class TaskList  {
   }
 
   transformDisplayUpdate() {
-  const form = document.getElementsByTagName("form")[1];
-  form.style.display = (form.style.display === 'none') ? 'block' : 'none';
-  this.cdr.detectChanges();
   }
 
+TaskOnClick(taskIdUpdated: number): void {
+    this.sharedDataService.setTaskId(taskIdUpdated);
+    
+    console.log('Exported Task ID:', taskIdUpdated);
+    const form = document.getElementsByTagName("form")[1];
+    form.style.display = (form.style.display === 'none') ? 'block' : 'none';
+    this.cdr.detectChanges();
+  }
 }

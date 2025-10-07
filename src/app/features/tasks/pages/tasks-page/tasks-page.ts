@@ -54,10 +54,10 @@ export class TasksPageComponent {
       this.tasks = tasksi; 
       console.log(tasksi);
     } catch (err) {
-      this.error = 'Tasks Not Found or 0';
-      console.error('Error al obtener las tareas:', err);
+        this.error = 'Tasks Not Found or 0';
+        console.error('Error fetching the task:', err);
+      }
     }
-  }
 
   async getTaskById(taskId: number): Promise<void> {
     try {
@@ -75,7 +75,7 @@ export class TasksPageComponent {
     this.loadAllTasksByStatusCompleted();
     this.loadAllTasksByStatusInProgress();
     this.getTaskById(1);
-    console.log("tareas cargadas")
+    console.log("tareas cargadas");
   }
 }
 

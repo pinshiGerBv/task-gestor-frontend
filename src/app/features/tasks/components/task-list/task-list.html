@@ -1,5 +1,5 @@
 <div class="taskContainer">
-  <div class="target" *ngFor="let task of tasks">
+  <div class="target" id="target" *ngFor="let task of tasks">
     <div class="target-col">
       <h3
         [ngClass]="{
@@ -22,7 +22,7 @@
       </b>
 
       <div id="btnd">
-        <button><i class="fas fa-edit" (click)="transformDisplayUpdate()"></i></button>
+        <button><i class="fas fa-edit" (click)="TaskOnClick(task.id)"></i></button>
         <button><i class="fas fa-trash" (click)="deleteTask(task.id)"></i></button>
       </div>
     </div>

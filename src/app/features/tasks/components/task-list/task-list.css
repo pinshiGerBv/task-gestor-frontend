@@ -10,6 +10,12 @@ div {
   border-radius: 10px;
   padding: 10px;
 }
+#target:hover {
+  margin: 10px;
+  border-radius: 10px;
+  transform: scale(1.1);
+  transition: all 0.3s ease-in-out;
+  }
 
 .target {
   display: grid;
@@ -67,4 +73,18 @@ div {
   color: red;
   font-weight: bold;
   font-size: larger;
+}
+
+.taskContainer:hover{
+  transform: scale(1.01);
+  transition: all 0.3s ease-in-out;
+  box-shadow: 0 5px 15px rgb(238, 227, 227);
+}
+
+.taskContainer{
+  margin: 10px;
+  padding: 10px;  
+  max-height: 500px;
+  scrollbar-color: blue;
+  overflow: scroll;
 }

@@ -11,26 +11,27 @@ import { TasksService } from '../../../../core/services/task';
   styleUrls: ['./task-dashboard.css']
 })
 export class TaskDashboard implements AfterViewInit, OnInit {
-  constructor(private cdr: ChangeDetectorRef, private tasksService: TasksService) {}
-
-  transformDisplay() {
-    let form = document.getElementsByTagName("form")[0];
-    form.style.display = form.style.display === 'none' ? 'block' : 'none';
-  }
-
-  @ViewChildren('progressCircle') progressCircles!: QueryList<ElementRef<SVGCircleElement>>;
-
-  tasks: any[] = []; // Aquí guardaremos las tareas obtenidas
-  error: string = '';  // Para manejar errores
-  private radius = 45;
-  private circumference = 2 * Math.PI * this.radius;
-
   pending = 0;
   maxPending = 0;
   inp = 0;
   maxInp = 0;
   completed = 0;
   maxCompleted = 0;
+
+  @ViewChildren('progressCircle') progressCircles!: QueryList<ElementRef<SVGCircleElement>>;
+
+  tasks: any[] = [];
+  error: string = '';
+  private radius = 45;
+  private circumference = 2 * Math.PI * this.radius;
+  private dataLoaded = false;
+
+  constructor(private cdr: ChangeDetectorRef, private tasksService: TasksService) {}
+
+  transformDisplay() {
+    let form = document.getElementsByTagName("form")[0];
+    form.style.display = form.style.display === 'none' ? 'block' : 'none';
+  }
 
   async loadAllTasksByStatusPending(): Promise<void> {
     try {
@@ -50,8 +51,7 @@ export class TaskDashboard implements AfterViewInit, OnInit {
       const tasksc = await this.tasksService.getCompletedTasks();
       this.tasks = tasksc;
       this.maxCompleted = tasksc.length;
-      console.log('Completed Tasks:', tasksc);
-      console.log(this.maxCompleted);
+      console.log('Completed Tasks:', this.maxCompleted);
     } catch (err) {
       this.error = 'Tasks Not Found or 0';
       console.error('Error al obtener las tareas completadas:', err);
@@ -63,118 +63,99 @@ export class TaskDashboard implements AfterViewInit, OnInit {
       const tasksi = await this.tasksService.getInProgressTasks();
       this.tasks = tasksi;
       this.maxInp = tasksi.length;
-      console.log('InProgress Tasks:', tasksi);
-      console.log(this.maxInp);
+      console.log('InProgress Tasks:', this.maxInp);
     } catch (err) {
       this.error = 'Tasks Not Found or 0';
       console.error('Error al obtener las tareas en progreso:', err);
     }
   }
-  loadPercent(){
-    
-  }
+
   async ngOnInit(): Promise<void> {
     await this.loadAllTasksByStatusPending();
     await this.loadAllTasksByStatusInProgress();
     await this.loadAllTasksByStatusCompleted();
+    this.dataLoaded = true;
   }
-    
+
   ngAfterViewInit() {
-    // Solo ejecutar esto después de que todas las tareas se hayan cargado
+    // Esperar a que los datos estén cargados
+    if (this.dataLoaded) {
+      this.startAnimations();
+    } else {
+      // Si los datos no están listos, esperar un poco
+      setTimeout(() => this.startAnimations(), 100);
+    }
+  }
+
+  private startAnimations(): void {
+    const totalTasks = this.maxPending + this.maxInp + this.maxCompleted;
+
+    let percentPending = 0;
+    let percentInProgress = 0;
+    let percentCompleted = 0;
+    
+    if (totalTasks > 0) {
+      percentPending = (this.maxPending / totalTasks) * 100;
+      percentInProgress = (this.maxInp / totalTasks) * 100;
+      percentCompleted = (this.maxCompleted / totalTasks) * 100;
+    }
+
     const timep = setInterval(() => {
       if (this.pending < this.maxPending) {
-        this.pending += 1;
+        this.pending += 1;  
         this.cdr.detectChanges();
       } else {
         clearInterval(timep);
       }
     }, 100);
 
+
     const timei = setInterval(() => {
       if (this.inp < this.maxInp) {
-        this.inp += 1;
+        this.inp += 1;  
         this.cdr.detectChanges();
       } else {
         clearInterval(timei);
       }
     }, 100);
 
+
     const timec = setInterval(() => {
       if (this.completed < this.maxCompleted) {
-        this.completed += 1;
+        this.completed += 1;  
         this.cdr.detectChanges();
-        console.log("CompletewqfcdScrgfd:", this.maxCompleted);
       } else {
         clearInterval(timec);
       }
     }, 100);
-    console.log("Max Completed:", this.maxCompleted);
-    let percentcompleted = 0;
-    if (this.maxPending + this.maxInp + this.maxCompleted > 0) {
-      percentcompleted = (this.maxCompleted / (this.maxPending + this.maxInp + this.maxCompleted)) * 100;
-    console.log("Percent Completed:", percentcompleted);
-    }
+    
+    this.animateCircle('progress-1', percentPending);
+    this.animateCircle('progress-2', percentInProgress);
+    this.animateCircle('progress-3', percentCompleted);
+  }
 
-    const circleRef = this.progressCircles.find((circle) => circle.nativeElement.id === 'progress-1');
+  // Método helper para animar los círculos
+  private animateCircle(circleId: string, targetPercent: number): void {
+    const circleRef = this.progressCircles.find((circle) => circle.nativeElement.id === circleId);
     if (circleRef) {
       const circle = circleRef.nativeElement;
-      const totalTasks = this.maxPending + this.maxInp + this.maxCompleted;
-      let completed = this.completed;
+      let currentPercent = 0;
+      
       circle.style.strokeDasharray = `${this.circumference}`;
       circle.style.strokeDashoffset = `${this.circumference}`;
 
-      const timerc = setInterval(() => {
-      if (completed >= -50) {
-        const percent = completed / 100;
-        const offset = this.circumference - percent * this.circumference;
-        circle.style.strokeDashoffset = `${offset}`;
-        completed -= 0.1;
-      } else {
-        clearInterval(timerc);
-      }
+      const timer = setInterval(() => {
+        if (currentPercent <= targetPercent) {
+          const percent = currentPercent / 100;
+          const offset = this.circumference - percent * this.circumference;
+          circle.style.strokeDashoffset = `${offset}`;
+          currentPercent += 0.1;
+        } else {
+          clearInterval(timer);
+        }
       }, 1);
-    }
-
-
-    const circleRef2 = this.progressCircles.find((circle) => circle.nativeElement.id === 'progress-2');
-    if (circleRef2) {
-      const circle = circleRef2.nativeElement;
-      const totalTasks = this.maxPending + this.maxInp + this.maxCompleted;
-      let completed = this.completed;
-      circle.style.strokeDasharray = `${this.circumference}`;
-      circle.style.strokeDashoffset = `${this.circumference}`;
-
-      const timerc = setInterval(() => {
-      if (completed >= -20) {
-        const percent = completed / 100;
-        const offset = this.circumference - percent * this.circumference;
-        circle.style.strokeDashoffset = `${offset}`;
-        completed -= 0.1;
-      } else {
-        clearInterval(timerc);
-      }
-      }, 1);
-    }
-
-
-    const circleRef3 = this.progressCircles.find((circle) => circle.nativeElement.id === 'progress-3');
-    if (circleRef3) {
-      const circle = circleRef3.nativeElement;
-      const totalTasks = this.maxPending + this.maxInp + this.maxCompleted;
-      let completed = this.completed;
-      circle.style.strokeDasharray = `${this.circumference}`;
-      circle.style.strokeDashoffset = `${this.circumference}`;
-
-      const timerc = setInterval(() => {
-      if (completed >= -percentcompleted) {
-        const percent = completed / 100;
-        const offset = this.circumference - percent * this.circumference;
-        circle.style.strokeDashoffset = `${offset}`;
-        completed -= 0.1;
-      } else {
-        clearInterval(timerc);
-      }
-      }, 1);
+    } else {
+      console.warn(`Circle with id '${circleId}' not found`);
     }
   }
 }

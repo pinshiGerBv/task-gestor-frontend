@@ -13,7 +13,6 @@
   <select name="status" [(ngModel)]="task.status" required>
     <option [ngValue]="TaskStatus.PENDING">Pending</option>
     <option [ngValue]="TaskStatus.IN_PROGRESS">In Progress</option>
-    <option [ngValue]="TaskStatus.COMPLETED">Completed</option>
   </select>
   <br />
 
@@ -29,7 +28,7 @@
   <button type="button" (click)="transformDisplay()">Cancel</button>
 </form>
 
-<form (ngSubmit)="submitTask()" #taskFormUpdate="ngForm">
+<form #taskFormUpdate="ngForm" (ngSubmit)="updateTask()">
   <h2>Update Task</h2>
 
   <label for="title">Task:</label>
@@ -56,6 +55,6 @@
   </select>
   <br />
 
-  <button type="submit">Update Task</button>
+  <button type="submit" (click)="updateTask()">Actualizar Tarea</button>
   <button type="button" (click)="transformDisplayUpdate()">Cancel</button>
 </form>
