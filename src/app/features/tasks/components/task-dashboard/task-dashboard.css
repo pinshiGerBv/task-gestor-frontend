@@ -127,7 +127,7 @@ input{
   gap: 0px;           
   border-bottom: 5px solid #051be2;
   border-radius: 5px; 
-  background: #fcfcfc5b;
+  background: #8378785b;
   color: #000000;
   margin: 2px; 
   padding: 0%;
@@ -142,23 +142,23 @@ input{
   align-items: center;
   gap: 0px;           
   padding:5px 10px;
-  border-bottom: 15px solid #0ca382;
+  border-bottom: 10px solid #030447;
   border-radius: 15px; 
-  background: #d9dbda2f;
+  background: #0000002c;
   max-height: 35px;
   color: #0e055a;
   margin: 5px;
 }
 
-.filter:active{
+.filter:active{  
   font-size: 15px;
   display: flex;
   align-items: center;
   gap: 0px;           
   padding:5px 10px;
-  border-bottom: 15px solid #0ca382;
+  border-bottom: 10px solid #030447;
   border-radius: 15px; 
-  background: #d9dbda2f;
+  background: #0000002c;
   max-height: 35px;
   color: #0e055a;
   margin: 5px;
