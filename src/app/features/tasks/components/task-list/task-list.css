@@ -13,15 +13,17 @@ div {
 #target:hover {
   margin: 10px;
   border-radius: 10px;
-  transform: scale(1.1);
+  transform: scale(1.05);
   transition: all 0.3s ease-in-out;
+  box-shadow: 0 5px 10px rgb(151, 147, 147);
   }
 
 .target {
-  display: grid;
   grid-template-columns: repeat(2, 1fr);
+  display: grid;
   gap: 10px;
   text-align: left;
+  
 }
 
 .target-col {

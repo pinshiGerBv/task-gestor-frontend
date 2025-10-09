@@ -18,11 +18,11 @@ export class TaskForm implements OnInit, OnDestroy {
   TaskStatus = TaskStatus;
   TaskPriority = TaskPriority;
   
-  currentTaskId: number | null = null; // VARIABLE PARA ALMACENAR EL ID
+  currentTaskId: number | null = null;
   private taskIdSubscription?: Subscription;
 
   task: Task = {
-    id: 0, 
+    id: 0,
     title: '',
     description: '',
     status: TaskStatus.PENDING,
@@ -32,21 +32,19 @@ export class TaskForm implements OnInit, OnDestroy {
   };
 
   constructor(
-    private taskService: TasksService, 
+    private taskService: TasksService,
     private cdr: ChangeDetectorRef,
-    private sharedData: SharedDataService // INYECTAR EL SERVICIO
+    private sharedData: SharedDataService
   ) {}
 
   ngOnInit() {
-    // Verificar si ya existe un ID guardado en SharedDataService
     const initialTaskId = this.sharedData.getTaskId();
     if (initialTaskId !== null) {
       this.currentTaskId = initialTaskId;
       console.log('ID recibido en task-form desde SharedDataService:', initialTaskId);
-      this.loadTaskData(initialTaskId); // Cargar datos si el ID es válido
+      this.loadTaskData(initialTaskId);
     }
 
-    // Suscribirse para recibir actualizaciones del taskId
     this.taskIdSubscription = this.sharedData.taskId$.subscribe(taskId => {
       if (taskId !== null) {
         this.currentTaskId = taskId;
@@ -58,18 +56,17 @@ export class TaskForm implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     if (this.taskIdSubscription) {
-      this.taskIdSubscription.unsubscribe(); // Limpiar la suscripción al destruir el componente
+      this.taskIdSubscription.unsubscribe();
     }
   }
 
-  // Método para cargar los datos de la tarea
   async loadTaskData(id: number): Promise<void> {
     try {
       const taskData = await this.taskService.getTaskById(id);
       if (taskData) {
         this.task = { ...taskData };
         console.log('Datos de tarea cargados:', this.task);
-        this.cdr.detectChanges(); // Actualizar la vista
+        this.cdr.detectChanges();
       }
     } catch (error) {
       console.error('Error al cargar tarea:', error);
@@ -108,7 +105,6 @@ export class TaskForm implements OnInit, OnDestroy {
     this.cdr.detectChanges();
   }
 
-  // Actualizar tarea usando el ID recibido
   async updateTask(): Promise<void> {
     if (!this.currentTaskId) {
       Swal.fire('Error', 'No hay tarea seleccionada', 'warning');
@@ -123,10 +119,9 @@ export class TaskForm implements OnInit, OnDestroy {
         icon: 'success',
         timer: 1500
       });
-      
       this.transformDisplayUpdate();
       this.resetForm();
-      this.sharedData.clearTaskId(); // Limpiar el ID después de actualizar
+      this.sharedData.clearTaskId();
       this.cdr.detectChanges();
     } catch (error) {
       console.error('Error al actualizar tarea:', error);
@@ -134,7 +129,6 @@ export class TaskForm implements OnInit, OnDestroy {
     }
   }
 
-  // Método de envío para crear una nueva tarea
   private async submit(task: any) {
     if (this.taskService.isEmpty(this.task.title) && this.taskService.isEmpty(this.task.description)) {
       Swal.fire({
@@ -166,7 +160,6 @@ export class TaskForm implements OnInit, OnDestroy {
           icon: 'success',
           timer: 1000
         });
-        
         this.transformDisplay();
         this.resetForm();
         this.cdr.detectChanges();

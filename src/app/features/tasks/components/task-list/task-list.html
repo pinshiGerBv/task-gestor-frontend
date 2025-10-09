@@ -3,27 +3,33 @@
     <div class="target-col">
       <h3
         [ngClass]="{
-          'low': task.priority==='low',
-        'medium': task.priority === 'medium',
-        'high': task.priority === 'high'
-      }" 
-      >{{ task.title }}</h3>
+          'low': task.priority === 'low',
+          'medium': task.priority === 'medium',
+          'high': task.priority === 'high'
+        }">
+        {{ task.title }}
+      </h3>
       <p>{{ task.description }}</p>
     </div>
+
     <div class="target-col">
-    <b class="status" 
-      style="font-size: large; font-weight: bold;" 
-      [ngClass]="{
-        'pending': task.status === 'pending',
-        'in-progress': task.status === 'in-progress',
-        'completed': task.status === 'completed'
-      }">
-          · {{ task.status }}
+      <b class="status"
+        style="font-size: large; font-weight: bold;"
+        [ngClass]="{
+          'pending': task.status === 'pending',
+          'in-progress': task.status === 'in-progress',
+          'completed': task.status === 'completed'
+        }">
+        · {{ task.status }}
       </b>
 
       <div id="btnd">
-        <button><i class="fas fa-edit" (click)="TaskOnClick(task.id)"></i></button>
-        <button><i class="fas fa-trash" (click)="deleteTask(task.id)"></i></button>
+        <button (click)="TaskOnClick(task.id)">
+          <i class="fas fa-edit"></i>
+        </button>
+        <button (click)="deleteTask(task.id)">
+          <i class="fas fa-trash"></i>
+        </button>
       </div>
     </div>
   </div>
