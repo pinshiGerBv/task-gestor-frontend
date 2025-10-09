@@ -125,14 +125,14 @@ input{
   display: flex;
   align-items: center;
   gap: 0px;           
-  border-bottom: 10px solid #12e7dd;
-  border-radius: 10px; 
-  background: #08ff8c5b;
-  color: #ff7e05;
+  border-bottom: 5px solid #051be2;
+  border-radius: 5px; 
+  background: #fcfcfc5b;
+  color: #000000;
   margin: 2px; 
   padding: 0%;
   max-height: 30px;
-  font-size: 15px;
+  font-size: 12px;
 }
 
 .filter:hover { 
