@@ -94,6 +94,7 @@ export class TaskDashboard implements AfterViewInit, OnInit {
   filterByPriority(priority: string) {
     this.activePriorityFilter = priority;
     this.applyFilters();
+    console.log("Filtro de prioridad aplicado:", priority);
   }
 
   async filterByStatus(status: string): Promise<void> {
