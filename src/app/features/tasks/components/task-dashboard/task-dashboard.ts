@@ -1,7 +1,7 @@
 import { Component, ElementRef, ViewChildren, QueryList, AfterViewInit, ChangeDetectorRef, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TaskList } from '../task-list/task-list';
-import { TasksService } from '../../../../core/services/task';
+import { SharedDataService, TasksService } from '../../../../core/services/task';
 import { FormsModule } from '@angular/forms';
 import { Task } from '../../../../core/models/task.model';
 
@@ -32,7 +32,8 @@ export class TaskDashboard implements AfterViewInit, OnInit {
 
   constructor(
     private cdr: ChangeDetectorRef,
-    private tasksService: TasksService
+    private tasksService: TasksService,
+    private sharedData: SharedDataService
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -40,8 +41,11 @@ export class TaskDashboard implements AfterViewInit, OnInit {
     await this.updateStats();
     this.dataLoaded = true;
     this.cdr.detectChanges();
+    
+    // Notificar que los datos fueron cargados
+    this.sharedData.notifyTaskUpdate();
   }
-
+  
   ngAfterViewInit() {
     this.progressCircles.changes.subscribe(() => {
       if (this.dataLoaded) this.startAnimations();
@@ -59,6 +63,10 @@ export class TaskDashboard implements AfterViewInit, OnInit {
       this.allTasks = await this.tasksService.getAllTasks();
       this.tasks = [...this.allTasks];
       this.cdr.detectChanges();
+
+      // Notificar que se cargaron las tareas
+      this.sharedData.notifyTaskUpdate();
+
     } catch (err) {
       this.error = 'Tasks Not Found or 0';
       console.error('Error al cargar tareas:', err);
@@ -82,6 +90,10 @@ export class TaskDashboard implements AfterViewInit, OnInit {
           this.startAnimations();
         }
       }, 400);
+
+      // Notificar que se actualizaron las estadísticas
+      this.sharedData.notifyTaskUpdate();
+
     } catch (error) {
       console.error('Error al actualizar estadísticas:', error);
     }
@@ -131,7 +143,7 @@ export class TaskDashboard implements AfterViewInit, OnInit {
     this.cdr.detectChanges();
   }
 
-  private startAnimations(): void {
+  public startAnimations(): void {
     const totalTasks = this.maxPending + this.maxInp + this.maxCompleted;
     if (totalTasks === 0) return;
 

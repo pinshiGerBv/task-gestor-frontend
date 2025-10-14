@@ -6,7 +6,8 @@ import { TasksService, SharedDataService } from '../../../../core/services/task'
 import Swal from 'sweetalert2';
 import { Task, TaskStatus, TaskPriority } from '../../../../core/models/task.model';
 import { Subscription } from 'rxjs';
-
+import { TaskDashboard } from '../task-dashboard/task-dashboard';
+import { Input } from '@angular/core';
 @Component({
   selector: 'app-task-form',
   standalone: true,
@@ -20,7 +21,8 @@ export class TaskForm implements OnInit, OnDestroy {
   
   currentTaskId: number | null = null;
   private taskIdSubscription?: Subscription;
-
+  
+  @Input() tasks: Task[] = [];
   task: Task = {
     id: 0,
     title: '',
@@ -160,6 +162,7 @@ export class TaskForm implements OnInit, OnDestroy {
           icon: 'success',
           timer: 1000
         });
+        this.sharedData.notifyTaskUpdate();
         this.transformDisplay();
         this.resetForm();
         this.cdr.detectChanges();
@@ -169,4 +172,6 @@ export class TaskForm implements OnInit, OnDestroy {
       }
     }
   }
+
+
 }

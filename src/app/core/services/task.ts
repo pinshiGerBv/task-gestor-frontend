@@ -1,8 +1,8 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { lastValueFrom, BehaviorSubject, Observable } from 'rxjs';
 import { Task, TaskStatus } from '../models/task.model';
-
+import { Subject } from 'rxjs';
 @Injectable({
   providedIn: 'root'
 })
@@ -60,10 +60,10 @@ export class TasksService {
   providedIn: 'root'
 })
 export class SharedDataService {
-  // 🔹 Comunicación del ID seleccionado
+  private animarDashboardSubject = new Subject<void>();
   private taskIdSubject = new BehaviorSubject<number | null>(null);
   public taskId$: Observable<number | null> = this.taskIdSubject.asObservable();
-
+    animarDashboard$ = this.animarDashboardSubject.asObservable();
   setTaskId(id: number): void {
     this.taskIdSubject.next(id);
     console.log('ID guardado en servicio:', id);
@@ -83,4 +83,5 @@ export class SharedDataService {
   notifyTaskUpdate(): void {
     this.taskUpdatedSource.next(true);
   }
+
 }
