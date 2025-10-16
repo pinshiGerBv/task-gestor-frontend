@@ -124,6 +124,7 @@ export class TaskForm implements OnInit, OnDestroy {
       this.transformDisplayUpdate();
       this.resetForm();
       this.sharedData.clearTaskId();
+      this.sharedData.triggerAnimation();
       this.cdr.detectChanges();
     } catch (error) {
       console.error('Error al actualizar tarea:', error);
@@ -163,8 +164,10 @@ export class TaskForm implements OnInit, OnDestroy {
           timer: 1000
         });
         this.sharedData.notifyTaskUpdate();
+        this.taskService.solicitarRecarga();
         this.transformDisplay();
         this.resetForm();
+        this.sharedData.triggerAnimation();
         this.cdr.detectChanges();
       } catch (error) {
         console.error('Error al enviar la tarea:', error);

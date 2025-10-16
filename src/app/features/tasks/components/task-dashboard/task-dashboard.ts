@@ -4,8 +4,8 @@ import { TaskList } from '../task-list/task-list';
 import { SharedDataService, TasksService } from '../../../../core/services/task';
 import { FormsModule } from '@angular/forms';
 import { Task } from '../../../../core/models/task.model';
-
-@Component({
+import { Signal } from '@angular/core';
+import { Subscription } from 'rxjs';@Component({
   selector: 'app-task-dashboard',
   standalone: true,
   imports: [CommonModule, TaskList, FormsModule],
@@ -41,11 +41,33 @@ export class TaskDashboard implements AfterViewInit, OnInit {
     await this.updateStats();
     this.dataLoaded = true;
     this.cdr.detectChanges();
-    
-    // Notificar que los datos fueron cargados
-    this.sharedData.notifyTaskUpdate();
+    this.animationSub = this.sharedData.animationTrigger$.subscribe(() => {
+      this.animation();
+    });
   }
   
+  ngOnDestroy(): void {
+    this.animationSub.unsubscribe();
+  }
+  
+  private animationSub!: Subscription;
+
+  async animation(){
+    this.progressCircles.changes.subscribe(() => {
+      if (this.dataLoaded) this.startAnimations();
+    });
+
+    setTimeout(() => {
+      if (this.dataLoaded && this.progressCircles.length > 0) {
+        this.startAnimations();
+      }
+    }, 400);
+
+    await this.updateStats();
+    this.dataLoaded = true;
+    this.cdr.detectChanges();
+  }
+
   ngAfterViewInit() {
     this.progressCircles.changes.subscribe(() => {
       if (this.dataLoaded) this.startAnimations();
@@ -63,10 +85,6 @@ export class TaskDashboard implements AfterViewInit, OnInit {
       this.allTasks = await this.tasksService.getAllTasks();
       this.tasks = [...this.allTasks];
       this.cdr.detectChanges();
-
-      // Notificar que se cargaron las tareas
-      this.sharedData.notifyTaskUpdate();
-
     } catch (err) {
       this.error = 'Tasks Not Found or 0';
       console.error('Error al cargar tareas:', err);
@@ -90,10 +108,6 @@ export class TaskDashboard implements AfterViewInit, OnInit {
           this.startAnimations();
         }
       }, 400);
-
-      // Notificar que se actualizaron las estadísticas
-      this.sharedData.notifyTaskUpdate();
-
     } catch (error) {
       console.error('Error al actualizar estadísticas:', error);
     }
@@ -154,6 +168,10 @@ export class TaskDashboard implements AfterViewInit, OnInit {
     this.animateCounter('pending', this.maxPending);
     this.animateCounter('inp', this.maxInp);
     this.animateCounter('completed', this.maxCompleted);
+    this.animateNumber('pending', this.maxPending);
+    this.animateNumber('completed', this.maxCompleted);
+    this.animateNumber('inp', this.maxInp);
+    
 
     setTimeout(() => {
       this.animateCircleById('progress-1', percentPending);
@@ -177,7 +195,6 @@ export class TaskDashboard implements AfterViewInit, OnInit {
         this[type] = maxValue;
         clearInterval(interval);
       }
-
       this.cdr.detectChanges();
     }, stepTime);
   }
@@ -207,6 +224,25 @@ export class TaskDashboard implements AfterViewInit, OnInit {
     };
 
     requestAnimationFrame(step);
+  }
+  private animateNumber(type: 'pending' | 'inp' | 'completed', targetValue: number): void {
+    let current = 0;
+    const duration = 800;
+    const steps = 30;
+    const stepValue = targetValue / steps;
+    const stepTime = duration / steps;
+
+    const interval = setInterval(() => {
+      current += stepValue;
+      this[type] = Math.floor(current);
+
+      if (current >= targetValue) {
+        this[type] = targetValue;
+        clearInterval(interval);
+      }
+
+      this.cdr.detectChanges();
+    }, stepTime);
   }
 
   transformDisplay() {

@@ -8,6 +8,7 @@ import { Subject } from 'rxjs';
 })
 export class TasksService {
   private apiUrl = 'http://localhost:3000/tasks'; 
+  //private apiUrl = 'https://task-gestor-backend.onrender.com/tasks'; 
 
   constructor(private http: HttpClient) {}
 
@@ -54,6 +55,15 @@ export class TasksService {
     if (typeof value === 'number' && isNaN(value)) return true;
     return false;
   }
+    private recargarDashboardSubject = new Subject<void>();
+
+  recargarDashboard$ = this.recargarDashboardSubject.asObservable();
+
+  solicitarRecarga() {
+    console.log('🔁 Servicio: solicitando recarga del dashboard');
+    this.recargarDashboardSubject.next();
+  }
+
 }
 
 @Injectable({
@@ -84,4 +94,15 @@ export class SharedDataService {
     this.taskUpdatedSource.next(true);
   }
 
+  solicitarAnimacionDashboard(): void {
+    this.animarDashboardSubject.next();
+  }
+
+
+  private animationTrigger = new Subject<void>();
+  animationTrigger$ = this.animationTrigger.asObservable();
+
+  triggerAnimation() {
+    this.animationTrigger.next();
+  }
 }

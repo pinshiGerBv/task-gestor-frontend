@@ -58,7 +58,8 @@ export class TaskList implements OnInit {
         this.tasks = this.tasks.filter(task => task.id !== id);
         this.cdr.detectChanges();
 
-        Swal.fire('Deleted!', 'Your task has been deleted.', 'success');
+        Swal.fire('Deleted!', 'Your task has been deleted.', 'success'); 
+        this.sharedDataService.triggerAnimation();
         this.sharedDataService.notifyTaskUpdate();
       }
     } catch (error) {
@@ -83,6 +84,7 @@ export class TaskList implements OnInit {
         this.tasks[index] = { ...this.tasks[index], ...updated };
         this.cdr.detectChanges();
         this.sharedDataService.notifyTaskUpdate();
+        this.sharedDataService.triggerAnimation();
       }
     } catch (error) {
       console.error('Error updating task:', error);
