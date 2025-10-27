@@ -6,7 +6,7 @@ import { Subject } from 'rxjs';
 @Injectable({
   providedIn: 'root'
 })
-export class TasksService {
+export class APIService {
   private apiUrl = 'http://localhost:3000/tasks'; 
   //private apiUrl = 'https://task-gestor-backend.onrender.com/tasks'; 
 
@@ -65,6 +65,8 @@ export class TasksService {
   }
 
 }
+
+
 
 @Injectable({
   providedIn: 'root'

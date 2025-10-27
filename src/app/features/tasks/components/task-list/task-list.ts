@@ -1,6 +1,6 @@
 import { Component, Input, ViewEncapsulation, ChangeDetectorRef, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TasksService, SharedDataService } from '../../../../core/services/task';
+import { APIService, SharedDataService } from '../../../../core/services/task';
 import { Task, TaskPriority, TaskStatus } from '../../../../core/models/task.model';
 import Swal from 'sweetalert2';
 
@@ -17,7 +17,7 @@ export class TaskList implements OnInit {
   @Input() tasks: Task[] = [];
 
   constructor(
-    private tasksService: TasksService,
+    private tasksService: APIService,
     private cdr: ChangeDetectorRef,
     private sharedDataService: SharedDataService
   ) {}

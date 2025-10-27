@@ -2,7 +2,7 @@ import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TaskDashboard } from '../../components/task-dashboard/task-dashboard';
 import { TaskForm } from '../../components/task-form/task-form';
-import { TasksService } from '../../../../core/services/task';
+import { APIService } from '../../../../core/services/task';
 
 @Component({
   selector: 'app-tasks-page',
@@ -14,7 +14,7 @@ export class TasksPageComponent {
   tasks = signal<any[]>([]); 
   error = signal<string>('');  
 
-  constructor(private tasksService: TasksService) {}
+  constructor(private tasksService: APIService) {}
 
   async loadAllTasks(): Promise<void> {
     try {

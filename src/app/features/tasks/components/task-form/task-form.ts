@@ -2,7 +2,7 @@ import { Component, ChangeDetectorRef, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
-import { TasksService, SharedDataService } from '../../../../core/services/task';
+import { APIService, SharedDataService } from '../../../../core/services/task';
 import Swal from 'sweetalert2';
 import { Task, TaskStatus, TaskPriority } from '../../../../core/models/task.model';
 import { Subscription } from 'rxjs';
@@ -34,7 +34,7 @@ export class TaskForm implements OnInit, OnDestroy {
   };
 
   constructor(
-    private taskService: TasksService,
+    private taskService: APIService,
     private cdr: ChangeDetectorRef,
     private sharedData: SharedDataService
   ) {}

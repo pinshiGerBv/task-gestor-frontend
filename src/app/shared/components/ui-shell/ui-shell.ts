@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { TasksService } from '../../../core/services/task';
+import { APIService } from '../../../core/services/task';
 import { Task } from '../../../core/models/task.model';
 
 @Component({
@@ -9,11 +9,11 @@ import { Task } from '../../../core/models/task.model';
 export class UiShellComponent implements OnInit {
   tasks: Task[] = [];
 
-  constructor(private tasksService: TasksService) {}
+  constructor(private APIService: APIService) {}
 
   async ngOnInit(): Promise<void> {
     try {
-      this.tasks = await this.tasksService.getAllTasks(); // ✅ ya no .subscribe
+      this.tasks = await this.APIService.getAllTasks(); // ✅ ya no .subscribe
     } catch (err) {
       console.error('Error al cargar las tareas:', err);
     }

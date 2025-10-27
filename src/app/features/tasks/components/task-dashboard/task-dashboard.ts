@@ -1,11 +1,23 @@
-import { Component, ElementRef, ViewChildren, QueryList, AfterViewInit, ChangeDetectorRef, OnInit } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  ViewChildren,
+  QueryList,
+  AfterViewInit,
+  ChangeDetectorRef,
+  OnInit,
+  signal
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TaskList } from '../task-list/task-list';
-import { SharedDataService, TasksService } from '../../../../core/services/task';
+import { APIService } from '../../../../core/services/api.service';
+import { StateService } from '../../../../core/services/State.service';
+import {SharedDataService} from '../../../../core/services/task';
 import { FormsModule } from '@angular/forms';
 import { Task } from '../../../../core/models/task.model';
-import { Signal } from '@angular/core';
-import { Subscription } from 'rxjs';@Component({
+import { TaskList } from '../task-list/task-list';
+import { Subscription } from 'rxjs';
+
+@Component({
   selector: 'app-task-dashboard',
   standalone: true,
   imports: [CommonModule, TaskList, FormsModule],
@@ -13,15 +25,19 @@ import { Subscription } from 'rxjs';@Component({
   styleUrls: ['./task-dashboard.css']
 })
 export class TaskDashboard implements AfterViewInit, OnInit {
-  pending = 0;
-  maxPending = 0;
-  inp = 0;
-  maxInp = 0;
-  completed = 0;
-  maxCompleted = 0;
+  // ✅ signals correctamente definidas
+  pending = signal(0);
+  maxPending = signal(0);
+  inp = signal(0);
+  maxInp = signal(0);
+  completed = signal(0);
+  maxCompleted = signal(0);
+
   private dataLoaded = false;
+  private animationSub!: Subscription;
 
   @ViewChildren('progressCircle') progressCircles!: QueryList<ElementRef<SVGCircleElement>>;
+
   tasks: Task[] = [];
   allTasks: Task[] = [];
   error: string = '';
@@ -32,8 +48,8 @@ export class TaskDashboard implements AfterViewInit, OnInit {
 
   constructor(
     private cdr: ChangeDetectorRef,
-    private tasksService: TasksService,
-    private sharedData: SharedDataService
+    private tasksService: APIService,
+    private sharedData: StateService,
   ) {}
 
   async ngOnInit(): Promise<void> {
@@ -41,18 +57,13 @@ export class TaskDashboard implements AfterViewInit, OnInit {
     await this.updateStats();
     this.dataLoaded = true;
     this.cdr.detectChanges();
-    this.animationSub = this.sharedData.animationTrigger$.subscribe(() => {
-      this.animation();
-    });
   }
-  
+
   ngOnDestroy(): void {
     this.animationSub.unsubscribe();
   }
-  
-  private animationSub!: Subscription;
 
-  async animation(){
+  async animation() {
     this.progressCircles.changes.subscribe(() => {
       if (this.dataLoaded) this.startAnimations();
     });
@@ -97,9 +108,10 @@ export class TaskDashboard implements AfterViewInit, OnInit {
       const tasksi = await this.tasksService.getInProgressTasks();
       const tasksc = await this.tasksService.getCompletedTasks();
 
-      this.maxPending = tasksp.length;
-      this.maxInp = tasksi.length;
-      this.maxCompleted = tasksc.length;
+      // ✅ Actualizamos signals correctamente
+      this.maxPending.set(tasksp.length);
+      this.maxInp.set(tasksi.length);
+      this.maxCompleted.set(tasksc.length);
 
       this.cdr.detectChanges();
 
@@ -120,7 +132,7 @@ export class TaskDashboard implements AfterViewInit, OnInit {
   filterByPriority(priority: string) {
     this.activePriorityFilter = priority;
     this.applyFilters();
-    console.log("Filtro de prioridad aplicado:", priority);
+    console.log('Filtro de prioridad aplicado:', priority);
   }
 
   async filterByStatus(status: string): Promise<void> {
@@ -157,21 +169,22 @@ export class TaskDashboard implements AfterViewInit, OnInit {
     this.cdr.detectChanges();
   }
 
+  // ✅ Corrige uso de signals en animaciones
   public startAnimations(): void {
-    const totalTasks = this.maxPending + this.maxInp + this.maxCompleted;
+    const totalTasks = this.maxPending() + this.maxInp() + this.maxCompleted();
     if (totalTasks === 0) return;
 
-    const percentPending = (this.maxPending / totalTasks) * 100;
-    const percentInProgress = (this.maxInp / totalTasks) * 100;
-    const percentCompleted = (this.maxCompleted / totalTasks) * 100;
+    const percentPending = (this.maxPending() / totalTasks) * 100;
+    const percentInProgress = (this.maxInp() / totalTasks) * 100;
+    const percentCompleted = (this.maxCompleted() / totalTasks) * 100;
 
-    this.animateCounter('pending', this.maxPending);
-    this.animateCounter('inp', this.maxInp);
-    this.animateCounter('completed', this.maxCompleted);
-    this.animateNumber('pending', this.maxPending);
-    this.animateNumber('completed', this.maxCompleted);
-    this.animateNumber('inp', this.maxInp);
-    
+    this.animateCounter('pending', this.maxPending());
+    this.animateCounter('inp', this.maxInp());
+    this.animateCounter('completed', this.maxCompleted());
+
+    this.animateNumber('pending', this.maxPending());
+    this.animateNumber('completed', this.maxCompleted());
+    this.animateNumber('inp', this.maxInp());
 
     setTimeout(() => {
       this.animateCircleById('progress-1', percentPending);
@@ -180,6 +193,7 @@ export class TaskDashboard implements AfterViewInit, OnInit {
     }, 200);
   }
 
+  // ✅ Usa .set() para actualizar signals
   private animateCounter(type: 'pending' | 'inp' | 'completed', maxValue: number): void {
     let current = 0;
     const duration = 800;
@@ -189,12 +203,35 @@ export class TaskDashboard implements AfterViewInit, OnInit {
 
     const interval = setInterval(() => {
       current += stepValue;
-      this[type] = Math.floor(current);
 
       if (current >= maxValue) {
-        this[type] = maxValue;
+        this[type].set(maxValue);
         clearInterval(interval);
+      } else {
+        this[type].set(Math.floor(current));
       }
+
+      this.cdr.detectChanges();
+    }, stepTime);
+  }
+
+  private animateNumber(type: 'pending' | 'inp' | 'completed', targetValue: number): void {
+    let current = 0;
+    const duration = 800;
+    const steps = 30;
+    const stepValue = targetValue / steps;
+    const stepTime = duration / steps;
+
+    const interval = setInterval(() => {
+      current += stepValue;
+
+      if (current >= targetValue) {
+        this[type].set(targetValue);
+        clearInterval(interval);
+      } else {
+        this[type].set(Math.floor(current));
+      }
+
       this.cdr.detectChanges();
     }, stepTime);
   }
@@ -225,28 +262,10 @@ export class TaskDashboard implements AfterViewInit, OnInit {
 
     requestAnimationFrame(step);
   }
-  private animateNumber(type: 'pending' | 'inp' | 'completed', targetValue: number): void {
-    let current = 0;
-    const duration = 800;
-    const steps = 30;
-    const stepValue = targetValue / steps;
-    const stepTime = duration / steps;
-
-    const interval = setInterval(() => {
-      current += stepValue;
-      this[type] = Math.floor(current);
-
-      if (current >= targetValue) {
-        this[type] = targetValue;
-        clearInterval(interval);
-      }
-
-      this.cdr.detectChanges();
-    }, stepTime);
-  }
 
   transformDisplay() {
-    const form = document.getElementsByTagName("form")[0];
+    const form = document.getElementsByTagName('form')[0];
     form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    this.cdr.detectChanges();
   }
 }
