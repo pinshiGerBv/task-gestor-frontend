@@ -6,12 +6,13 @@ import {
   AfterViewInit,
   ChangeDetectorRef,
   OnInit,
-  signal
+  signal,
+  computed,
+  effect
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { APIService } from '../../../../core/services/api.service';
 import { StateService } from '../../../../core/services/State.service';
-import {SharedDataService} from '../../../../core/services/task';
 import { FormsModule } from '@angular/forms';
 import { Task } from '../../../../core/models/task.model';
 import { TaskList } from '../task-list/task-list';
@@ -25,22 +26,18 @@ import { Subscription } from 'rxjs';
   styleUrls: ['./task-dashboard.css']
 })
 export class TaskDashboard implements AfterViewInit, OnInit {
-  // ✅ signals correctamente definidas
   pending = signal(0);
-  maxPending = signal(0);
   inp = signal(0);
-  maxInp = signal(0);
   completed = signal(0);
-  maxCompleted = signal(0);
+
+  maxPending = computed(() => this.sharedData.countPending());
+  maxInProgress = computed(() => this.sharedData.countInProgress());
+  maxCompleted = computed(() => this.sharedData.countCompleted());
 
   private dataLoaded = false;
   private animationSub!: Subscription;
 
   @ViewChildren('progressCircle') progressCircles!: QueryList<ElementRef<SVGCircleElement>>;
-
-  tasks: Task[] = [];
-  allTasks: Task[] = [];
-  error: string = '';
 
   searchTerm: string = '';
   activeStatusFilter: string = 'all';
@@ -53,30 +50,18 @@ export class TaskDashboard implements AfterViewInit, OnInit {
   ) {}
 
   async ngOnInit(): Promise<void> {
-    await this.loadAllTasks();
-    await this.updateStats();
+    await this.sharedData.loadAllTasks();
+    this.updateCounters();
     this.dataLoaded = true;
     this.cdr.detectChanges();
+  
+    effect(() => {
+      this.updateCounters();
+    });
   }
 
   ngOnDestroy(): void {
-    this.animationSub.unsubscribe();
-  }
-
-  async animation() {
-    this.progressCircles.changes.subscribe(() => {
-      if (this.dataLoaded) this.startAnimations();
-    });
-
-    setTimeout(() => {
-      if (this.dataLoaded && this.progressCircles.length > 0) {
-        this.startAnimations();
-      }
-    }, 400);
-
-    await this.updateStats();
-    this.dataLoaded = true;
-    this.cdr.detectChanges();
+    this.animationSub?.unsubscribe();
   }
 
   ngAfterViewInit() {
@@ -91,73 +76,23 @@ export class TaskDashboard implements AfterViewInit, OnInit {
     }, 400);
   }
 
-  async loadAllTasks(): Promise<void> {
-    try {
-      this.allTasks = await this.tasksService.getAllTasks();
-      this.tasks = [...this.allTasks];
-      this.cdr.detectChanges();
-    } catch (err) {
-      this.error = 'Tasks Not Found or 0';
-      console.error('Error al cargar tareas:', err);
-    }
-  }
+  updateCounters() {
+    this.pending.set(this.sharedData.countPending());
+    this.inp.set(this.sharedData.countInProgress());
+    this.completed.set(this.sharedData.countCompleted());
 
-  async updateStats(): Promise<void> {
-    try {
-      const tasksp = await this.tasksService.getPendingTasks();
-      const tasksi = await this.tasksService.getInProgressTasks();
-      const tasksc = await this.tasksService.getCompletedTasks();
-
-      // ✅ Actualizamos signals correctamente
-      this.maxPending.set(tasksp.length);
-      this.maxInp.set(tasksi.length);
-      this.maxCompleted.set(tasksc.length);
-
-      this.cdr.detectChanges();
-
-      setTimeout(() => {
-        if (this.progressCircles && this.progressCircles.length > 0) {
-          this.startAnimations();
-        }
-      }, 400);
-    } catch (error) {
-      console.error('Error al actualizar estadísticas:', error);
-    }
-  }
-
-  searchTasks() {
-    this.applyFilters();
-  }
-
-  filterByPriority(priority: string) {
-    this.activePriorityFilter = priority;
-    this.applyFilters();
-    console.log('Filtro de prioridad aplicado:', priority);
-  }
-
-  async filterByStatus(status: string): Promise<void> {
-    this.activeStatusFilter = status;
-    this.applyFilters();
+    setTimeout(() => {
+      this.startAnimations();
+    }, 100);
   }
 
   applyFilters() {
-    let filtered = [...this.allTasks];
+    this.sharedData.setFilters({
+      search: this.searchTerm.trim(),
+      status: this.activeStatusFilter as 'all' | Task['status'],
+      priority: this.activePriorityFilter as 'all' | Task['priority']
+    });
 
-    if (this.activeStatusFilter !== 'all') {
-      filtered = filtered.filter(task => task.status === this.activeStatusFilter);
-    }
-
-    if (this.activePriorityFilter !== 'all') {
-      filtered = filtered.filter(task => task.priority === this.activePriorityFilter);
-    }
-
-    if (this.searchTerm.trim() !== '') {
-      filtered = filtered.filter(task =>
-        task.title.toLowerCase().includes(this.searchTerm.toLowerCase())
-      );
-    }
-
-    this.tasks = filtered;
     this.cdr.detectChanges();
   }
 
@@ -165,26 +100,35 @@ export class TaskDashboard implements AfterViewInit, OnInit {
     this.activeStatusFilter = 'all';
     this.activePriorityFilter = 'all';
     this.searchTerm = '';
-    this.tasks = [...this.allTasks];
+    this.sharedData.clearFilters();
     this.cdr.detectChanges();
   }
 
-  // ✅ Corrige uso de signals en animaciones
+  filterByPriority(priority: string) {
+    this.activePriorityFilter = priority;
+    this.applyFilters();
+  }
+
+  filterByStatus(status: string) {
+    this.activeStatusFilter = status;
+    this.applyFilters();
+  }
+
+  searchTasks() {
+    this.applyFilters();
+  }
+
   public startAnimations(): void {
-    const totalTasks = this.maxPending() + this.maxInp() + this.maxCompleted();
+    const totalTasks = this.pending() + this.inp() + this.completed();
     if (totalTasks === 0) return;
 
-    const percentPending = (this.maxPending() / totalTasks) * 100;
-    const percentInProgress = (this.maxInp() / totalTasks) * 100;
-    const percentCompleted = (this.maxCompleted() / totalTasks) * 100;
+    const percentPending = (this.pending() / totalTasks) * 100;
+    const percentInProgress = (this.inp() / totalTasks) * 100;
+    const percentCompleted = (this.completed() / totalTasks) * 100;
 
-    this.animateCounter('pending', this.maxPending());
-    this.animateCounter('inp', this.maxInp());
-    this.animateCounter('completed', this.maxCompleted());
-
-    this.animateNumber('pending', this.maxPending());
-    this.animateNumber('completed', this.maxCompleted());
-    this.animateNumber('inp', this.maxInp());
+    this.animateCounter('pending', this.pending());
+    this.animateCounter('inp', this.inp());
+    this.animateCounter('completed', this.completed());
 
     setTimeout(() => {
       this.animateCircleById('progress-1', percentPending);
@@ -193,7 +137,6 @@ export class TaskDashboard implements AfterViewInit, OnInit {
     }, 200);
   }
 
-  // ✅ Usa .set() para actualizar signals
   private animateCounter(type: 'pending' | 'inp' | 'completed', maxValue: number): void {
     let current = 0;
     const duration = 800;
@@ -206,27 +149,6 @@ export class TaskDashboard implements AfterViewInit, OnInit {
 
       if (current >= maxValue) {
         this[type].set(maxValue);
-        clearInterval(interval);
-      } else {
-        this[type].set(Math.floor(current));
-      }
-
-      this.cdr.detectChanges();
-    }, stepTime);
-  }
-
-  private animateNumber(type: 'pending' | 'inp' | 'completed', targetValue: number): void {
-    let current = 0;
-    const duration = 800;
-    const steps = 30;
-    const stepValue = targetValue / steps;
-    const stepTime = duration / steps;
-
-    const interval = setInterval(() => {
-      current += stepValue;
-
-      if (current >= targetValue) {
-        this[type].set(targetValue);
         clearInterval(interval);
       } else {
         this[type].set(Math.floor(current));
@@ -263,8 +185,8 @@ export class TaskDashboard implements AfterViewInit, OnInit {
     requestAnimationFrame(step);
   }
 
-  transformDisplay() {
-    const form = document.getElementsByTagName('form')[0];
+  transformDisplay(formIndex = 0) {
+    const form = document.getElementsByTagName('form')[formIndex];
     form.style.display = form.style.display === 'none' ? 'block' : 'none';
     this.cdr.detectChanges();
   }
