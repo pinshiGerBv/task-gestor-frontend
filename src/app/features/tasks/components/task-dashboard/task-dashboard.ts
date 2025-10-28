@@ -1,15 +1,4 @@
-import {
-  Component,
-  ElementRef,
-  ViewChildren,
-  QueryList,
-  AfterViewInit,
-  ChangeDetectorRef,
-  OnInit,
-  signal,
-  computed,
-  effect
-} from '@angular/core';
+import {Component,ElementRef,ViewChildren,QueryList,AfterViewInit,ChangeDetectorRef,OnInit,signal,computed,effect} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { APIService } from '../../../../core/services/api.service';
 import { StateService } from '../../../../core/services/State.service';
@@ -17,7 +6,6 @@ import { FormsModule } from '@angular/forms';
 import { Task } from '../../../../core/models/task.model';
 import { TaskList } from '../task-list/task-list';
 import { Subscription } from 'rxjs';
-
 @Component({
   selector: 'app-task-dashboard',
   standalone: true,
@@ -33,7 +21,6 @@ export class TaskDashboard implements AfterViewInit, OnInit {
   maxPending = computed(() => this.sharedData.countPending());
   maxInProgress = computed(() => this.sharedData.countInProgress());
   maxCompleted = computed(() => this.sharedData.countCompleted());
-
   private dataLoaded = false;
   private animationSub!: Subscription;
 
@@ -120,12 +107,31 @@ export class TaskDashboard implements AfterViewInit, OnInit {
 
   public startAnimations(): void {
     const totalTasks = this.pending() + this.inp() + this.completed();
-    if (totalTasks === 0) return;
+    
+    let percentPending = (this.pending() / totalTasks) * 100;
+    let percentInProgress = (this.inp() / totalTasks) * 100;
+    let percentCompleted = (this.completed() / totalTasks) * 100;
 
-    const percentPending = (this.pending() / totalTasks) * 100;
-    const percentInProgress = (this.inp() / totalTasks) * 100;
-    const percentCompleted = (this.completed() / totalTasks) * 100;
-
+    if (this.completed() === 0 && this.inp() === 0 && this.pending() === 0) {
+      percentCompleted = 0;
+      percentInProgress = 0;
+      percentPending = 0;
+    }
+    if (this.completed() === 0) {
+      percentCompleted = 0;
+      percentPending = (this.pending() / totalTasks) * 100;
+      percentInProgress = (this.inp() / totalTasks) * 100;
+    }
+    if (this.inp() === 0) {
+      percentInProgress = 0;
+      percentPending = (this.pending() / totalTasks) * 100;
+      percentCompleted = (this.completed() / totalTasks) * 100;
+    }
+    if (this.pending() === 0) {
+      percentPending = 0;
+      percentInProgress = (this.inp() / totalTasks) * 100;
+      percentCompleted = (this.completed() / totalTasks) * 100;
+    }
     this.animateCounter('pending', this.pending());
     this.animateCounter('inp', this.inp());
     this.animateCounter('completed', this.completed());
@@ -181,7 +187,6 @@ export class TaskDashboard implements AfterViewInit, OnInit {
         circle.style.strokeDashoffset = `${circumference - (targetPercent / 100) * circumference}`;
       }
     };
-
     requestAnimationFrame(step);
   }
 

@@ -17,7 +17,6 @@ export class TaskList implements OnInit {
   TaskPriority = TaskPriority;
   TaskStatus = TaskStatus;
 
-  // ✅ Computed signal para tareas filtradas
   tasks = computed(() => this.state.filteredTasks());
 
   constructor(public state: StateService) {}
@@ -59,15 +58,11 @@ export class TaskList implements OnInit {
   }
 TaskOnClick(taskId: number): void {
   
-    const form = document.getElementsByTagName('form')[1];
-    form.style.display = form.style.display === 'none' ? 'block' : 'none';
+  const form = document.getElementsByTagName('form')[1];
+  form.style.display = form.style.display === 'none' ? 'block' : 'none';
   const task = this.state.getTaskById(taskId);
   if (!task) return;
-
-  // Establecer la tarea seleccionada en la señal
   this.state.selectedTask.set({ ...task });
-
-  // Mostrar el formulario solo para edición
   this.state.showTaskForm.set(true);
 }
 

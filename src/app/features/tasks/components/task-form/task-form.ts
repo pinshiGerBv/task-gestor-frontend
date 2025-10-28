@@ -86,8 +86,6 @@ export class TaskForm implements OnInit {
   }
 
   async updateTask() {
-    const form = document.getElementsByTagName('form')[1];
-    form.style.display = form.style.display === 'none' ? 'block' : 'none';
     const currentTask = this.task();
 
     if (!currentTask.id) {
@@ -104,11 +102,10 @@ export class TaskForm implements OnInit {
         icon: 'success',
         timer: 1500
       });
-
       this.transformDisplay(1);
-      this.resetForm();
-      this.shared.selectedTask.set(null);
 
+
+      this.shared.selectedTask.set(null);
     } catch {
       Swal.fire('Error', 'Failed to update the task', 'error');
     }
