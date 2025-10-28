@@ -1,6 +1,6 @@
-import { Component, Input, ViewEncapsulation, ChangeDetectorRef, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TasksService, SharedDataService } from '../../../../core/services/task';
+import { StateService } from '../../../../core/services/State.service';
 import { Task, TaskPriority, TaskStatus } from '../../../../core/models/task.model';
 import Swal from 'sweetalert2';
 
@@ -10,94 +10,68 @@ import Swal from 'sweetalert2';
   imports: [CommonModule],
   templateUrl: './task-list.html',
   styleUrls: ['./task-list.css'],
-  encapsulation: ViewEncapsulation.None
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TaskList implements OnInit {
 
-  @Input() tasks: Task[] = [];
+  TaskPriority = TaskPriority;
+  TaskStatus = TaskStatus;
 
-  constructor(
-    private tasksService: TasksService,
-    private cdr: ChangeDetectorRef,
-    private sharedDataService: SharedDataService
-  ) {}
+  tasks = computed(() => this.state.filteredTasks());
+
+  constructor(public state: StateService) {}
 
   ngOnInit() {
-    if (!this.tasks || this.tasks.length === 0) {
-      this.insertList();
+    if (this.state.tasks().length === 0) {
+      this.state.loadAllTasks();
     }
-
-    this.sharedDataService.taskUpdated$.subscribe(updated => {
-      if (updated) {
-        this.insertList();
-      }
-    });
-  }
-
-  insertList() {
-    this.tasksService.getAllTasks().then(data => {
-      this.tasks = data;
-      this.cdr.detectChanges();
-    });
   }
 
   async deleteTask(id: number): Promise<void> {
+    const result = await Swal.fire({
+      title: '¿Estás seguro?',
+      text: '¡Esta acción no se puede deshacer!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    });
+
+    if (result.isConfirmed) {
+      await this.state.deleteTask(id);
+      Swal.fire('Eliminada', 'La tarea ha sido eliminada', 'success');
+    }
+  }
+
+  async updateTask(id: number, updatedTask: Partial<Task>): Promise<void> {
     try {
-      const result = await Swal.fire({
-        title: 'Are you sure?',
-        text: "You won't be able to revert this!",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#3085d6',
-        cancelButtonColor: '#d33',
-        confirmButtonText: 'Yes, delete it!'
+      await this.state.updateTask(id, updatedTask);
+      Swal.fire({
+        title: 'Actualizada',
+        text: 'La tarea fue actualizada correctamente',
+        icon: 'success',
+        timer: 1000
       });
-
-      if (result.isConfirmed) {
-        await this.tasksService.deleteTaskById(id);
-        this.tasks = this.tasks.filter(task => task.id !== id);
-        this.cdr.detectChanges();
-
-        Swal.fire('Deleted!', 'Your task has been deleted.', 'success');
-        this.sharedDataService.notifyTaskUpdate();
-      }
-    } catch (error) {
-      console.error('Error deleting task:', error);
+    } catch {
+      Swal.fire('Error', 'No se pudo actualizar la tarea', 'error');
     }
   }
+TaskOnClick(taskId: number): void {
+  
+  const form = document.getElementsByTagName('form')[1];
+  form.style.display = form.style.display === 'none' ? 'block' : 'none';
+  const task = this.state.getTaskById(taskId);
+  if (!task) return;
+  this.state.selectedTask.set({ ...task });
+  this.state.showTaskForm.set(true);
+}
 
-  async updateTask(
-    id: number,
-    updatedTask: Partial<{
-      id: number;
-      title: string;
-      description: string;
-      priority: TaskPriority;
-      status: TaskStatus;
-    }>
-  ): Promise<void> {
-    try {
-      const updated = await this.tasksService.updateTask(id, updatedTask);
-      const index = this.tasks.findIndex(task => task.id === id);
-      if (index !== -1) {
-        this.tasks[index] = { ...this.tasks[index], ...updated };
-        this.cdr.detectChanges();
-        this.sharedDataService.notifyTaskUpdate();
-      }
-    } catch (error) {
-      console.error('Error updating task:', error);
-    }
+
+  get isLoading() {
+    return this.state.loading();
   }
 
-  TaskOnClick(taskIdUpdated: number): void {
-    this.sharedDataService.setTaskId(taskIdUpdated);
-    console.log('Exported Task ID:', taskIdUpdated);
-
-    const form = document.getElementsByTagName("form")[1];
-    if (form) {
-      form.style.display = (form.style.display === 'none') ? 'block' : 'none';
-    }
-
-    this.cdr.detectChanges();
+  get hasError() {
+    return this.state.error();
   }
 }

@@ -16,10 +16,6 @@ export class App {
 
 const startApplication = async () => {
   try {
-    
-    // Aquí continúa el resto de tu lógica de aplicación
-    // initializeApp();
-    // renderUI();
   } catch (error) {
     console.error('Error al iniciar la aplicación:', error);
   }

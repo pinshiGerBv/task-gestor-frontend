@@ -2,22 +2,22 @@
   <h2>New Task</h2>
 
   <label for="title">Task:</label>
-  <input type="text" name="title" id="title" [(ngModel)]="task.title" required />
+  <input type="text" name="title" id="title" [(ngModel)]="task().title" required />
   <br />
 
   <label for="description">Description:</label>
-  <input type="text" name="description" id="description" [(ngModel)]="task.description" required />
+  <input type="text" name="description" id="description" [(ngModel)]="task().description" required />
   <br />
 
   <label for="status">Status:</label>
-  <select name="status" [(ngModel)]="task.status" required>
+  <select name="status" [(ngModel)]="task().status" required>
     <option [ngValue]="TaskStatus.PENDING">Pending</option>
     <option [ngValue]="TaskStatus.IN_PROGRESS">In Progress</option>
   </select>
   <br />
 
   <label for="priority">Priority:</label>
-  <select name="priority" [(ngModel)]="task.priority" required>
+  <select name="priority" [(ngModel)]="task().priority" required>
     <option [ngValue]="TaskPriority.LOW">Low</option>
     <option [ngValue]="TaskPriority.MEDIUM">Medium</option>
     <option [ngValue]="TaskPriority.HIGH">High</option>
@@ -32,15 +32,15 @@
   <h2>Update Task</h2>
 
   <label for="title">Task:</label>
-  <input type="text" name="title" id="title" [(ngModel)]="task.title" required />
+  <input type="text" name="title" id="title" [(ngModel)]="task().title" required />
   <br />
 
   <label for="description">Description:</label>
-  <input type="text" name="description" id="description" [(ngModel)]="task.description" required />
+  <input type="text" name="description" id="description" [(ngModel)]="task().description" required />
   <br />
 
   <label for="status">Status:</label>
-  <select name="status" [(ngModel)]="task.status" required>
+  <select name="status" [(ngModel)]="task().status" required>
     <option [ngValue]="TaskStatus.PENDING">Pending</option>
     <option [ngValue]="TaskStatus.IN_PROGRESS">In Progress</option>
     <option [ngValue]="TaskStatus.COMPLETED">Completed</option>
@@ -48,13 +48,13 @@
   <br />
 
   <label for="priority">Priority:</label>
-  <select name="priority" [(ngModel)]="task.priority" required>
+  <select name="priority" [(ngModel)]="task().priority" required>
     <option [ngValue]="TaskPriority.LOW">Low</option>
     <option [ngValue]="TaskPriority.MEDIUM">Medium</option>
     <option [ngValue]="TaskPriority.HIGH">High</option>
   </select>
-  <br />
+  <br/>
 
-  <button type="submit" (click)="updateTask()">Actualizar Tarea</button>
-  <button type="button" (click)="transformDisplayUpdate()">Cancel</button>
+  <button type="submit">Actualizar Tarea</button>
+  <button type="button" (click)="transformDisplay(1)">Cancel</button>
 </form>

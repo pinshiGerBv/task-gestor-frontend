@@ -10,82 +10,113 @@ div {
   border-radius: 10px;
   padding: 10px;
 }
+
 #target:hover {
   margin: 10px;
   border-radius: 10px;
   transform: scale(1.05);
   transition: all 0.3s ease-in-out;
   box-shadow: 0 5px 10px rgb(151, 147, 147);
-  }
+}
 
 .target {
   grid-template-columns: repeat(2, 1fr);
   display: grid;
   gap: 10px;
   text-align: left;
-  
 }
 
 .target-col {
   position: relative;
   width: 90%;
-  min-height: 100px; 
+  min-height: 100px;
+  padding: 15px; /* Reducido para hacer más delgado */
   box-shadow: 0 5px 10px rgb(218, 211, 211);
-
+  padding-bottom: 50px; /* Espacio para el botón */
 }
 
 #btnd {
-  position: absolute;  
+  position: absolute;
   bottom: 10px;
   right: 10px;
+  padding: 6px 12px;
+  font-size: 14px;
 }
-.status{
+
+/* Responsive para #btnd */
+@media (max-width: 768px) {
+  #btnd {
+    position: static; /* Cambia a flujo normal en móviles */
+    display: block;
+    margin: 10px auto 0;
+    width: calc(100% - 20px);
+  }
+  
+  .target-col {
+    padding-bottom: 15px; /* Reduce padding cuando el botón no es absoluto */
+  }
+}
+
+@media (max-width: 480px) {
+  .target {
+    grid-template-columns: 1fr; /* Una columna en pantallas pequeñas */
+  }
+  
+  .target-col {
+    width: 100%;
+  }
+}
+
+.status {
   display: inline-block;
-   background-color: rgb(94,196,156);
-   color: white;
-   padding: 5px;
-   margin: 3px;
+  background-color: rgb(94, 196, 156);
+  color: white;
+  padding: 5px;
+  margin: 3px;
   font-weight: bold;
   font-size: large;
-   border-radius: 10px;
-  }
+  border-radius: 10px;
+}
 
 .pending {
   background: rgba(0, 0, 255);
 }
+
 .in-progress {
   background: rgba(245, 157, 80);
 }
+
 .completed {
   background: rgba(94, 196, 156);
 }
-
 
 .low {
   color: greenyellow;
   font-weight: bold;
   font-size: larger;
 }
+
 .medium {
   color: rgba(245, 157, 80);
   font-weight: bold;
   font-size: larger;
 }
+
 .high {
   color: red;
   font-weight: bold;
   font-size: larger;
 }
 
-.taskContainer:hover{
+.taskContainer:hover {
   transform: scale(1.01);
   transition: all 0.3s ease-in-out;
   box-shadow: 0 5px 15px rgb(238, 227, 227);
 }
 
-.taskContainer{
+.taskContainer {
   margin: 10px;
-  padding: 10px;  
+  padding: 10px;
   max-height: 500px;
   scrollbar-color: blue;
   overflow: scroll;

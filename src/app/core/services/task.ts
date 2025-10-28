@@ -1,13 +1,14 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { lastValueFrom, BehaviorSubject, Observable } from 'rxjs';
 import { Task, TaskStatus } from '../models/task.model';
-
+import { Subject } from 'rxjs';
 @Injectable({
   providedIn: 'root'
 })
-export class TasksService {
+export class APIService {
   private apiUrl = 'http://localhost:3000/tasks'; 
+  //private apiUrl = 'https://task-gestor-backend.onrender.com/tasks'; 
 
   constructor(private http: HttpClient) {}
 
@@ -54,16 +55,27 @@ export class TasksService {
     if (typeof value === 'number' && isNaN(value)) return true;
     return false;
   }
+    private recargarDashboardSubject = new Subject<void>();
+
+  recargarDashboard$ = this.recargarDashboardSubject.asObservable();
+
+  solicitarRecarga() {
+    console.log('🔁 Servicio: solicitando recarga del dashboard');
+    this.recargarDashboardSubject.next();
+  }
+
 }
+
+
 
 @Injectable({
   providedIn: 'root'
 })
 export class SharedDataService {
-  // 🔹 Comunicación del ID seleccionado
+  private animarDashboardSubject = new Subject<void>();
   private taskIdSubject = new BehaviorSubject<number | null>(null);
   public taskId$: Observable<number | null> = this.taskIdSubject.asObservable();
-
+    animarDashboard$ = this.animarDashboardSubject.asObservable();
   setTaskId(id: number): void {
     this.taskIdSubject.next(id);
     console.log('ID guardado en servicio:', id);
@@ -82,5 +94,17 @@ export class SharedDataService {
 
   notifyTaskUpdate(): void {
     this.taskUpdatedSource.next(true);
+  }
+
+  solicitarAnimacionDashboard(): void {
+    this.animarDashboardSubject.next();
+  }
+
+
+  private animationTrigger = new Subject<void>();
+  animationTrigger$ = this.animationTrigger.asObservable();
+
+  triggerAnimation() {
+    this.animationTrigger.next();
   }
 }
